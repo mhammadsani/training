@@ -1,0 +1,34 @@
+COVID-19 Analyzer
+After the COVID-19 outbreak in the entire world, the World Health Organization (WHO) wants to publish a press release to all countries to take necessary emergency safety measures according to their geographical location. So as the new engineer of the analysis team, you got the job to get meaningful information from the raw data. In this noble cause, you can save thousands of lives around the globe.
+
+As per the current circumstances, you are required to create and perform an analysis of COVID situations across the globe. You are given two datasets, the COVID cases and the dataset of safety measures taken by every country.
+
+The program(command-line) should perform the following functionalities on the user’s choice.
+For a given country, display the ratio of recovered patients over total cases.
+
+covidanalyzer.py /path/to/files-dir -a "Pakistan"
+Recovered/total ratio: 0.23
+
+For a given safety measure, display the average death rate around the globe.
+
+covidanalyzer.py /path/to/files-dir -b "Economic measures"
+43.28% death average found in 89 countries.
+
+Display the efficiencies of 5 mostly adopted safety measures. The efficiency can be calculated as 
+efficiency = total recovered cases of all countries taken the measure / total cases of all countries taken the measure
+
+covidanalyzer.py /path/to/files-dir -c
+Economic measures: 0.47
+Limit public gatherings: 0.42
+Introduction of quarantine policies: 0.53
+Strengthening the public health system: 0.48
+International flights suspension: 0.36
+
+
+BONUS TASK: graphical implementation of point 3.
+
+Note: The main script file should be covidanalyzer.py, and the argument should be -a, -b, -c for task1, task2, and task3 respectively. The result format should be the same but the result data may differ from the above examples. You also need to handle false/incorrect input with proper error handling.
+
+Note: The data files can be found here. 
+Link 
+https://drive.google.com/drive/folders/1PgYSwgen8-z5o2Jb-5-vcSRnCQuUBIL6
