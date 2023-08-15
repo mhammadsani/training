@@ -21,6 +21,11 @@ number_to_months = {
 
 
 def file_reading(data_directory) -> None:
+    """Reads the content in data directory to main dictionary
+    
+    data directory is the path where data exist and main dictionary is 
+    globally available variable which will store data is certain format
+    """
     for year in range(1996, 2012):
         main_dic[year] = {}
         for month_number in range(1, 13):
@@ -44,6 +49,13 @@ def file_reading(data_directory) -> None:
    
             
 def annual_report_of_temperature_and_humidity_helper(year: int) -> tuple:
+    """Calculate the annual report (temperature and humidity)
+    
+    Function has one parameter year of which temperature and humidity
+    needs to be calculated and returns a tuple of overall maximum and minumum
+    temperatues and overall maximum and minimum humidity for the given specific
+    year.
+    """
     year_data = main_dic[year]
     every_month_max_temp = []
     every_month_min_temp = []
@@ -97,7 +109,9 @@ def annual_report_of_temperature_and_humidity_helper(year: int) -> tuple:
 
 
 #### Task 2
-def custom_max(daily_max_temp: list) -> tuple:
+def custom_max(daily_max_temp: list) -> tuple:  # helper function for hottest day of eachy year
+    """ Find the maximum temperature and date of that day.
+    """
     daily_max = daily_max_temp[0]
     date = 1
     for day_idx in range(len(daily_max_temp)):
