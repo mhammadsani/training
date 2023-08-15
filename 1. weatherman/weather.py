@@ -1,5 +1,6 @@
 import argparse 
 import csv
+import typing
 
 
 main_dic = {}
@@ -31,19 +32,19 @@ def file_reading(data_directory) -> None:
             file_name = f'lahore_weather_{year}_{number_to_months[month_number]}.txt'
             try:
                with open(f"{data_directory}/{file_name}", 'r') as csv_file:
-                    csv_reader = csv.reader(csv_file, delimiter=',')
-                    file_data = []
-                    for row in csv_reader:
-                        file_data.append(row)
-                    
-                    all_days = []
-                    for row in range(2, len(file_data)- 1):
-                        day = file_data[row][1:]
-                        all_days.append(day)
-                    
-                    main_dic[year][number_to_months[month_number]] = all_days
+                csv_reader = csv.reader(csv_file, delimiter=',')
+                file_data = []
+                for row in csv_reader:
+                    file_data.append(row)
+                
+                all_days = []
+                for row in range(2, len(file_data)- 1):
+                    day = file_data[row][1:]
+                    all_days.append(day)
+                
+                main_dic[year][number_to_months[month_number]] = all_days
             
-            except FileNotFoundError:  # as some files do not exist like 1996 Jan
+            except FileNotFoundError:
                 continue
    
             
@@ -75,7 +76,8 @@ def annual_report_of_temperature_and_humidity_helper(year: int) -> tuple:
                 max_humidity = monthly_data[day][6] 
                 min_humidity = monthly_data[day][8]
                 
-                if max_temp == "":  # some values are missing
+                ## max temperature 
+                if max_temp == "":
                     every_day_max_temp.append(float('-inf'))
                 else:
                     every_day_max_temp.append(int(max_temp))
@@ -109,9 +111,6 @@ def annual_report_of_temperature_and_humidity_helper(year: int) -> tuple:
 #### Task 2
 def custom_max(daily_max_temp: list) -> tuple:  # helper function for hottest day of eachy year
     """ Find the maximum temperature and date of that day.
-    
-    Custom max takes list of daily temperatures of a month and 
-    returns the maximum temperature with the date as a tuple.
     """
     daily_max = daily_max_temp[0]
     date = 1
@@ -123,14 +122,6 @@ def custom_max(daily_max_temp: list) -> tuple:  # helper function for hottest da
 
 
 def hottest_day_of_each_year_helper(year: int) -> tuple:
-    """Works as the helper to find the hottest day of the year provided
-
-    Args:
-        year (int): year you want to find the hottest day
-
-    Returns:
-        tuple: year, data of the hottest day and temperature of hottest day
-    """
     year_data = main_dic[year]
     every_month_max = []
     for month_number in range(1, 13):
@@ -145,7 +136,6 @@ def hottest_day_of_each_year_helper(year: int) -> tuple:
                     every_day_max_temp.append(int(temp))
                     
             # every_month_max.append(max(every_day_max_temp))
-            # print(every_day_max_temp)
             date_and_max_temp = custom_max(every_day_max_temp)
             full_date_with_year = (year, month_number, date_and_max_temp[0], date_and_max_temp[1])
             every_month_max.append(full_date_with_year)
@@ -155,12 +145,11 @@ def hottest_day_of_each_year_helper(year: int) -> tuple:
             continue
              
     result = sorted(every_month_max, key=lambda x: x[3], reverse=True)
-    result = result[0]  # accessing the hishest temperature and date
+    result = result[0]
     return (result[0], f'{result[2]}/{result[1]}/{result[0]}', result[3])
 
 
 def annual_report_of_temperature_and_humidity():
-    """Display the annual report of temperature and humidity of the data"""
     print("Year        MAX Temp        MIN Temp        MAX Humidity        MIN Humidity")
     print("--------------------------------------------------------------------------")
     for year in range(1996, 2012):
@@ -170,10 +159,9 @@ def annual_report_of_temperature_and_humidity():
             
             
 def hottest_day_of_each_year():
-    """Display hottest day of each year"""
     print("Year        Date          Temp")
     print("------------------------------")
-    for year in range(1996, 2012):
+    for year in range(1996, 2011):
         year, date, temp = hottest_day_of_each_year_helper(year)
         print(f'{str(year)} {date.rjust(15)} {str(temp).rjust(8)}')
 
