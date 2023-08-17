@@ -4,7 +4,6 @@ import calendar
 from typing import Tuple
 
 
-
 weatherman = {}
 
 
@@ -80,7 +79,7 @@ def get_annual_report_of_temperature_and_humidity(year: int) -> Tuple:
             every_month_min_temp.append(min(day_important_information['everyday_min_temps']))
             every_month_max_humidity.append(max(day_important_information['everyday_max_humidities']))
             every_month_min_humidity.append(min(day_important_information['everyday_min_humidities']))           
-        except (KeyError, ValueError):
+        except (KeyError):
             continue
         
     return (max(every_month_max_temp), min(every_month_min_temp), \
@@ -192,5 +191,3 @@ def main() -> None:
         perform_task(args)
 
 main()
-
-
