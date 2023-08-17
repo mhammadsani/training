@@ -1,54 +1,38 @@
 import argparse 
 import csv
-import typing
+import calendar
+from typing import Tuple
 
 
-main_dic = {}
-number_to_months = {
-    1: 'Jan', 
-    2: 'Feb',
-    3: 'Mar',
-    4: 'Apr',
-    5: 'May',
-    6: 'Jun',
-    7: 'Jul',
-    8: 'Aug',
-    9: 'Sep',
-    10: 'Oct',
-    11: 'Nov',
-    12: 'Dec'
-}
+
+weatherman = {}
 
 
-def file_reading(data_directory) -> None:
+def get_month_name(month: int) -> str:
+    return calendar.month_name[month][:3]
+
+
+def read_files(weatherman_files_path: str) -> None:
     """Reads the content in data directory to main dictionary
     
     data directory is the path where data exist and main dictionary is 
     globally available variable which will store data is certain format
     """
     for year in range(1996, 2012):
-        main_dic[year] = {}
-        for month_number in range(1, 13):
-            file_name = f'lahore_weather_{year}_{number_to_months[month_number]}.txt'
+        weatherman[year] = {}
+        for month in range(1, 13):
+            file_name = f'lahore_weather_{year}_{get_month_name(month)}.txt'
             try:
-               with open(f"{data_directory}/{file_name}", 'r') as csv_file:
+               with open(f"{weatherman_files_path}/{file_name}", 'r') as csv_file:
                 csv_reader = csv.reader(csv_file, delimiter=',')
-                file_data = []
-                for row in csv_reader:
-                    file_data.append(row)
-                
-                all_days = []
-                for row in range(2, len(file_data)- 1):
-                    day = file_data[row][1:]
-                    all_days.append(day)
-                
-                main_dic[year][number_to_months[month_number]] = all_days
-            
+                days_raw_data = [day for day in csv_reader]
+                days = [days_raw_data[day][1:] for day in range(2, len(days_raw_data) - 1)]
+                weatherman[year][get_month_name(month)] = days
             except FileNotFoundError:
                 continue
    
             
-def annual_report_of_temperature_and_humidity_helper(year: int) -> tuple:
+def get_annual_report_of_temperature_and_humidity(year: int) -> Tuple:
     """Calculate the annual report (temperature and humidity)
     
     Function has one parameter year of which temperature and humidity
@@ -56,126 +40,157 @@ def annual_report_of_temperature_and_humidity_helper(year: int) -> tuple:
     temperatues and overall maximum and minimum humidity for the given specific
     year.
     """
-    year_data = main_dic[year]
+    yearly_data = weatherman[year]
     every_month_max_temp = []
     every_month_min_temp = []
     every_month_max_humidity = []
     every_month_min_humidity = []
     
-    for month_number in range(1, 13):
+    for month in range(1, 13):
         try:
-            monthly_data = year_data[number_to_months[month_number]] 
-            every_day_max_temp = []
-            every_day_min_temp = []
-            every_day_max_humidity = []
-            every_day_min_humidity = []   
+            monthly_data = yearly_data[get_month_name(month)] 
+            day_important_information = {}
             
+            day_important_information["everyday_max_temps"] = []
+            day_important_information["everyday_min_temps"] = []
+            day_important_information["everyday_max_humidities"] = []
+            day_important_information["everyday_min_humidities"] = []
+            max_temp_index = 0
+            min_temp_index = 2
+            max_humidity_index = 6
+            min_humidity_index = 8
+            positive_infinity = float('+inf')
+            negative_infinity = float('-inf')
             for day in range(len(monthly_data)):
-                max_temp = monthly_data[day][0]  # index 0 has max temp
-                min_temp = monthly_data[day][2]  # index 2 has min temp
-                max_humidity = monthly_data[day][6] 
-                min_humidity = monthly_data[day][8]
+                max_temp = monthly_data[day][max_temp_index]
+                min_temp = monthly_data[day][min_temp_index]
+                max_humidity = monthly_data[day][max_humidity_index] 
+                min_humidity = monthly_data[day][min_humidity_index]
                 
-                ## max temperature 
-                if max_temp == "":
-                    every_day_max_temp.append(float('-inf'))
-                else:
-                    every_day_max_temp.append(int(max_temp))
+                day_important_information['everyday_max_temps'].\
+                    append(negative_infinity if max_temp == "" else int(max_temp))
+                day_important_information['everyday_min_temps'].\
+                    append(positive_infinity if min_temp == "" else int(min_temp))    
+                day_important_information['everyday_max_humidities'].\
+                    append(negative_infinity if max_humidity == "" else int(max_humidity))
+                day_important_information['everyday_min_humidities'].\
+                    append(positive_infinity if min_humidity == "" else int(min_humidity))
                 
-                if min_temp == "":
-                    every_day_min_temp.append(float('+inf'))
-                else:
-                    every_day_min_temp.append(int(min_temp)) 
-                    
-                if max_humidity == "":
-                    every_day_max_humidity.append(float('-inf'))
-                else:
-                    every_day_max_humidity.append(int(max_humidity))
-                    
-                if min_humidity == "":
-                    every_day_max_humidity.append(float('-inf'))
-                else:
-                    every_day_min_humidity.append(int(min_humidity))
-                
-            every_month_max_temp.append(max(every_day_max_temp))
-            every_month_min_temp.append(min(every_day_min_temp))
-            every_month_max_humidity.append(max(every_day_max_humidity))
-            every_month_min_humidity.append(max(every_day_min_humidity))
-                    
+            every_month_max_temp.append(max(day_important_information['everyday_max_temps']))
+            every_month_min_temp.append(min(day_important_information['everyday_min_temps']))
+            every_month_max_humidity.append(max(day_important_information['everyday_max_humidities']))
+            every_month_min_humidity.append(min(day_important_information['everyday_min_humidities']))           
         except (KeyError, ValueError):
             continue
         
-    return (max(every_month_max_temp), min(every_month_min_temp), max(every_month_max_humidity), min(every_month_min_humidity))
+    return (max(every_month_max_temp), min(every_month_min_temp), \
+            max(every_month_max_humidity), min(every_month_min_humidity))
 
 
 #### Task 2
-def custom_max(daily_max_temp: list) -> tuple:  # helper function for hottest day of eachy year
+def get_day_and_max_temperature(daily_max_temp: list) -> Tuple:  # helper function for hottest day of eachy year
     """ Find the maximum temperature and date of that day.
     """
     daily_max = daily_max_temp[0]
-    date = 1
+    day = 1
     for day_idx in range(len(daily_max_temp)):
         if daily_max_temp[day_idx] > daily_max:
-            date = day_idx + 1
+            day = day_idx + 1
             daily_max = daily_max_temp[day_idx]
-    return (date, daily_max)
+    return (day, daily_max)
 
 
-def hottest_day_of_each_year_helper(year: int) -> tuple:
-    year_data = main_dic[year]
-    every_month_max = []
-    for month_number in range(1, 13):
+def get_hottest_day_of_the_year(year: int) -> Tuple:
+    """Find the hottest day of the year
+
+    Args:
+        year (int): year of which hottest day needs to be find out
+
+    Returns:
+        Tuple: containing the hottest day exact date and temperature on that day
+    """
+    yearly_data = weatherman[year]
+    every_month_max_temps = []
+    for month in range(1, 13):
         try:
-            monthly_data = year_data[number_to_months[month_number]] 
-            every_day_max_temp = []   
+            monthly_data = yearly_data[get_month_name(month)] 
+            every_day_max_temps = []   
+            negative_infinity = float('-inf')
             for day in range(len(monthly_data)):
-                temp = monthly_data[day][0]
-                if temp == "":
-                    every_day_max_temp.append(float('-inf'))
-                else:
-                    every_day_max_temp.append(int(temp))
-                    
-            # every_month_max.append(max(every_day_max_temp))
-            date_and_max_temp = custom_max(every_day_max_temp)
-            full_date_with_year = (year, month_number, date_and_max_temp[0], date_and_max_temp[1])
-            every_month_max.append(full_date_with_year)
-            
-            # print(f"Every Day Max Temp for {number_to_months[month_number]} is {every_day_max_temp}")
+                temperature = monthly_data[day][0]
+                every_day_max_temps.append(int(temperature) if temperature != "" else negative_infinity)
+            day_and_max_temp = get_day_and_max_temperature(every_day_max_temps)
+            date = (year, month, day_and_max_temp[0], day_and_max_temp[1])
+            every_month_max_temps.append(date)
         except KeyError:
             continue
-             
-    result = sorted(every_month_max, key=lambda x: x[3], reverse=True)
-    result = result[0]
-    return (result[0], f'{result[2]}/{result[1]}/{result[0]}', result[3])
+    maximum_temperatue = 3
+    hottest_days = sorted(every_month_max_temps, key=lambda x: x[maximum_temperatue], reverse=True)
+    hottest_day = 0
+    hottest_day_details = hottest_days[hottest_day]
+    hottest_day_date = 2
+    hottest_day_month = 1
+    hottest_day_temperature = 3
+    return (f'{hottest_day_details[hottest_day_date]}/{hottest_day_details[hottest_day_month]}/{year}', hottest_day_details[hottest_day_temperature])
 
 
-def annual_report_of_temperature_and_humidity():
+def annual_report_of_temperature_and_humidity() -> None:
     print("Year        MAX Temp        MIN Temp        MAX Humidity        MIN Humidity")
     print("--------------------------------------------------------------------------")
     for year in range(1996, 2012):
-        weather_values = annual_report_of_temperature_and_humidity_helper(year)
-        
+        weather_values = get_annual_report_of_temperature_and_humidity(year)
         print(f'{year} {str(weather_values[0]).rjust(12)} {str(weather_values[1]).rjust(15)} {str(weather_values[2]).rjust(15)} {str(weather_values[3]).rjust(20)}')
             
             
-def hottest_day_of_each_year():
+def hottest_day_of_each_year() -> None:
     print("Year        Date          Temp")
     print("------------------------------")
     for year in range(1996, 2011):
-        year, date, temp = hottest_day_of_each_year_helper(year)
+        date, temp = get_hottest_day_of_the_year(year)
         print(f'{str(year)} {date.rjust(15)} {str(temp).rjust(8)}')
 
 
-if __name__ == "__main__":
+
+def parse_arguments() -> object:
+    """Parse the command line arguments into object
+
+    Returns:
+        object with report and weatehrman_data_path as attributes
+    """
+    
     parser = argparse.ArgumentParser()
     parser.add_argument("report", help="report# 1 for Annual Temperature and 2 for Hottest Day of the year")
-    parser.add_argument("data_directory", help="data_dir")
-    args = parser.parse_args()
+    parser.add_argument("weatherman_files_path", help="data_dir")
+    args = parser.parse_args()    
+    return args
+
+
+def perform_task(args: object) -> None:
+    """Perform the specified task based from tasks
+
+    Args:
+        args (object): object having attributes report and weatherman_files_path
+    """
     
-    file_reading(args.data_directory)
-    
-    if int(args.report) == 1:
-        annual_report_of_temperature_and_humidity()
-    elif int(args.report) == 2:
-        hottest_day_of_each_year()
-    
+    tasks = {
+    '1': 'annual report', 
+    '2': 'hottest day'
+    }
+    try:
+        if tasks[args.report] == 'annual report':
+            annual_report_of_temperature_and_humidity()
+        elif tasks[args.report] == 'hottest day':
+            hottest_day_of_each_year()
+    except KeyError:
+        print("1 for Annual Temperature and 2 for Hottest Day of the year")
+
+
+def main() -> None:
+    if __name__ == "__main__":
+        args = parse_arguments()
+        read_files(args.weatherman_files_path)
+        perform_task(args)
+
+main()
+
+

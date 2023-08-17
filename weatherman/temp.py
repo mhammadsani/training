@@ -287,3 +287,9 @@ print("------------------------------")
 for year in range(1996, 2011):
     year, date, temp = hottest_day_of_each_year(year)
     print(f'{str(year)} {date.rjust(15)} {str(temp).rjust(8)}')
+
+
+
+import calendar
+
+print(calendar.month_name[1][:3])
