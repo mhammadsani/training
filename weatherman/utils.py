@@ -1,6 +1,12 @@
 import calendar
 from typing import Tuple
-import weather
+import weatherman_parser
+from constants import (max_temp_index, min_temp_index, 
+                       max_humidity_index, min_humidity_index,
+                       positive_infinity, negative_infinity, 
+                       hottest_day, hottest_day_date_idx, hottest_day_month_idx,
+                       hottest_day_temperature_idx, montly_hottest_day, montly_hottest_temp
+                       )
 
 
 get_month_name = lambda month: calendar.month_name[month][:3]
@@ -18,67 +24,64 @@ def get_annual_report_of_temperature_and_humidity(year: int) -> Tuple:
                minimum humidity 
     """
     
-    yearly_data = weather.weatherman[year]
-    every_month_max_temp = []
-    every_month_min_temp = []
-    every_month_max_humidity = []
-    every_month_min_humidity = []
+    yearly_data = weatherman_parser.weatherman[year]
+    monthly_weather_data = {
+        'max temperatures': [],
+        'min temperatures': [],
+        'max humidities': [],
+        'min humidities': []
+    }
     
     for month in range(1, 13):
         try:
             monthly_data = yearly_data[get_month_name(month)] 
-            day_important_information = {}
-            
-            day_important_information["everyday_max_temps"] = []
-            day_important_information["everyday_min_temps"] = []
-            day_important_information["everyday_max_humidities"] = []
-            day_important_information["everyday_min_humidities"] = []
-            max_temp_index = 0
-            min_temp_index = 2
-            max_humidity_index = 6
-            min_humidity_index = 8
-            positive_infinity = float('+inf')
-            negative_infinity = float('-inf')
+            daily_data = {
+                'max temperatures': [],
+                'min temperatures': [],
+                'max humidities': [],
+                'min humidities': []
+            }
+
             for day in range(len(monthly_data)):
                 max_temp = monthly_data[day][max_temp_index]
                 min_temp = monthly_data[day][min_temp_index]
                 max_humidity = monthly_data[day][max_humidity_index] 
                 min_humidity = monthly_data[day][min_humidity_index]
                 
-                day_important_information['everyday_max_temps'].\
-                    append(negative_infinity 
+                daily_data['max temperatures'].append(
+                           negative_infinity 
                            if max_temp == "" 
                            else int(max_temp))
-                day_important_information['everyday_min_temps'].\
-                    append(positive_infinity 
+                daily_data['min temperatures'].append(
+                           positive_infinity 
                            if min_temp == "" 
                            else int(min_temp))    
-                day_important_information['everyday_max_humidities'].\
-                    append(negative_infinity 
+                daily_data['max humidities'].append(
+                           negative_infinity 
                            if max_humidity == "" 
                            else int(max_humidity))
-                day_important_information['everyday_min_humidities'].\
-                    append(positive_infinity 
+                daily_data['min humidities'].append(
+                           positive_infinity 
                            if min_humidity == "" 
                            else int(min_humidity))
                 
-            every_month_max_temp.append(
-                max(day_important_information['everyday_max_temps'])
+            monthly_weather_data['max temperatures'].append(
+                max(daily_data['max temperatures'])
                 )
-            every_month_min_temp.append(
-                min(day_important_information['everyday_min_temps'])
+            monthly_weather_data['min temperatures'].append(
+                min(daily_data['min temperatures'])
                 )
-            every_month_max_humidity.append(
-                max(day_important_information['everyday_max_humidities'])
+            monthly_weather_data['max humidities'].append(
+                max(daily_data['max humidities'])
                 )
-            every_month_min_humidity.append(
-                min(day_important_information['everyday_min_humidities'])
+            monthly_weather_data['min humidities'].append(
+                min(daily_data['min humidities'])
                 )           
         except (KeyError):
             continue
         
-    return (max(every_month_max_temp), min(every_month_min_temp), \
-            max(every_month_max_humidity), min(every_month_min_humidity))
+    return (max(monthly_weather_data['max temperatures']), min(monthly_weather_data['min temperatures']),
+            max(monthly_weather_data['max humidities']), min(monthly_weather_data['min humidities']))
 
 
 def get_day_and_max_temperature(daily_max_temp: list) -> Tuple:
@@ -91,7 +94,7 @@ def get_day_and_max_temperature(daily_max_temp: list) -> Tuple:
     Returns:
         Tuple: containing maximum temperature of month and date
     """
-    daily_max = daily_max_temp[0]
+    daily_max = daily_max_temp[max_temp_index]
     day = 1
     for day_idx in range(len(daily_max_temp)):
         if daily_max_temp[day_idx] > daily_max:
@@ -109,7 +112,7 @@ def get_hottest_day_of_the_year(year: int) -> Tuple:
     Returns:
         Tuple: containing the hottest day exact date and temperature on that day
     """
-    yearly_data = weather.weatherman[year]
+    yearly_data = weatherman_parser.weatherman[year]
     every_month_max_temps = []
     for month in range(1, 13):
         try:
@@ -117,12 +120,12 @@ def get_hottest_day_of_the_year(year: int) -> Tuple:
             every_day_max_temps = []   
             negative_infinity = float('-inf')
             for day in range(len(monthly_data)):
-                temperature = monthly_data[day][0]
+                temperature = monthly_data[day][max_temp_index]
                 every_day_max_temps.append(
                     int(temperature) if temperature != "" else negative_infinity
                     )
             day_and_max_temp = get_day_and_max_temperature(every_day_max_temps)
-            date = (year, month, day_and_max_temp[0], day_and_max_temp[1])
+            date = (year, month, day_and_max_temp[montly_hottest_day], day_and_max_temp[montly_hottest_temp])
             every_month_max_temps.append(date)
         except KeyError:
             continue
@@ -130,11 +133,7 @@ def get_hottest_day_of_the_year(year: int) -> Tuple:
     hottest_days = sorted(every_month_max_temps,
                           key=lambda x: x[maximum_temperatue],
                           reverse=True)
-    hottest_day = 0
     hottest_day_details = hottest_days[hottest_day]
-    hottest_day_date_idx = 2
-    hottest_day_month_idx = 1
-    hottest_day_temperature_idx = 3
     hottest_day_date = hottest_day_details[hottest_day_date_idx]
     hottest_day_month = hottest_day_details[hottest_day_month_idx]
     hottest_day_temperature = hottest_day_details[hottest_day_temperature_idx]
