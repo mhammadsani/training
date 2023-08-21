@@ -1,6 +1,7 @@
 from utils import get_annual_report_of_temperature_and_humidity, get_hottest_day_of_the_year
-from constants import (twelve_left_spaces, fifteen_left_spaces,
-                       eigth_left_spaces, twenty_left_spaces)
+from constants import (
+    TWELWE_LEFT_SPACES, FIFTEEN_LEFT_SPACES, EIGHT_LEFT_SPACES, TWENTY_LEFT_SPACES
+    )
 
 def annual_report_of_temperature_and_humidity() -> None:
     """display the annual report containing
@@ -11,8 +12,9 @@ def annual_report_of_temperature_and_humidity() -> None:
     print("--------------------------------------------------------------------------")
     for year in range(1996, 2012):
         max_temp, min_temp, max_humidity, min_humidity = get_annual_report_of_temperature_and_humidity(year) 
-        print(f'{year} {max_temp:>12} {min_temp:>15} {max_humidity:>15} {min_humidity:>20}')
-        # print(f'{year} {max_temp:>twelve_left_spaces} {min_temp:>fifteen_left_spaces} {max_humidity:>fifteen_left_spaces} {min_humidity:>twenty_left_spaces}')
+        print(
+            f'{year} {max_temp:>{TWELWE_LEFT_SPACES}} {min_temp:>{FIFTEEN_LEFT_SPACES}} {max_humidity:>{FIFTEEN_LEFT_SPACES}} {min_humidity:>{TWENTY_LEFT_SPACES}}'
+            )
 
             
             
@@ -23,6 +25,5 @@ def hottest_day_of_each_year() -> None:
     print("------------------------------")
     for year in range(1996, 2012):
         date, temp = get_hottest_day_of_the_year(year)
-        # print(f'{year} {date:>fifteen_left_spaces} {temp:>eigth_left_spaces}')
-        print(f'{year} {date:>15} {temp:>8}')
+        print(f'{year} {date:>{FIFTEEN_LEFT_SPACES}} {temp:>{EIGHT_LEFT_SPACES}}')
 

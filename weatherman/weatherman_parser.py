@@ -1,8 +1,8 @@
 import argparse
 import csv
+from constants import ANNUAL_REPORT_TASK,  HOTTEST_DAY_TASK, TASKS
 from report_generator import annual_report_of_temperature_and_humidity, hottest_day_of_each_year
 from utils import get_month_name
-from constants import tasks
 
 
 weatherman = {}
@@ -51,9 +51,9 @@ def run_task(args: object) -> None:
     """
 
     try:
-        if tasks[args.report] == 'annual report':
+        if args.report == TASKS[ANNUAL_REPORT_TASK]:
             annual_report_of_temperature_and_humidity()
-        elif tasks[args.report] == 'hottest day':
+        elif args.report == TASKS[HOTTEST_DAY_TASK]:
             hottest_day_of_each_year()
     except KeyError:
         print("1 for Annual Temperature and 2 for Hottest Day of the year")
