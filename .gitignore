@@ -1,3 +1,5 @@
 /weatherman/weatherdata
 /weatherman/temp.py
 /weatherman/details.txt
+weatherman
+/weatherman/__pycache__/
