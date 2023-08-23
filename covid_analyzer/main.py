@@ -5,7 +5,7 @@ import perform_tasks
 
 
 
-covid = {}
+covid_data = {}
 
 
 def read_files(covid_analyzer_file_path: str) -> None:
@@ -15,26 +15,27 @@ def read_files(covid_analyzer_file_path: str) -> None:
         covid_analyzer_file_path (str): path wehre files exist
     """
     
-    covid[CASES_STATS] = []
-    covid[SAFETY_MEASURES] = []
+    covid_data[CASES_STATS] = []
+    covid_data[SAFETY_MEASURES] = []
     with open(f'{covid_analyzer_file_path}/covid_cases_stats.csv') as csv_file:
         covid_cases_stats = csv.reader(csv_file, delimiter=',')
-        covid[CASES_STATS] = [covid_data_per_country
-                                for covid_data_per_country in covid_cases_stats]
-        covid[CASES_STATS] = covid[CASES_STATS][1:len(covid[CASES_STATS]) - 8]
+        covid_data[CASES_STATS] = [
+            covid_data_per_country for covid_data_per_country in covid_cases_stats
+            ]
+        covid_data[CASES_STATS] = covid_data[CASES_STATS][1:len(covid_data[CASES_STATS]) - 8]
         
     with open(f'{covid_analyzer_file_path}/covid_safety_measures.csv') as csv_file:
         covid_safety_measures = csv.reader(csv_file, delimiter=',')
-        covid[SAFETY_MEASURES] = [covid_data_per_country
-                                    for covid_data_per_country in covid_safety_measures]
-        covid[SAFETY_MEASURES] = covid[SAFETY_MEASURES][1:]
+        covid_data[SAFETY_MEASURES] = [
+            covid_data_per_country for covid_data_per_country in covid_safety_measures
+            ]
+        covid_data[SAFETY_MEASURES] = covid_data[SAFETY_MEASURES][1:]
 
 
 def main():
-    if __name__ == "__main__":
-        command_line_arguments = parse_arguments()
-        read_files(command_line_arguments.covid_files_path)
-        perform_tasks.run_tasks(covid, command_line_arguments)
+    command_line_arguments = parse_arguments()
+    read_files(command_line_arguments.covid_files_path)
+    perform_tasks.run_tasks(covid_data, command_line_arguments)
         
-        
-main()
+if __name__ == "__main__":      
+    main()
