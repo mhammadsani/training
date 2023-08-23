@@ -1,41 +1,40 @@
-import csv 
-from constants import CASES_STATS, SAFETY_MEASURES
-from covid_data_parser import parse_arguments
-import perform_tasks
+from constants import CASES_STATS, SAFETY_MEASURE, EFFICIENCY, SAFETY_MEASURES
+from covid_data_parser import parse_arguments, read_files
+import utils
 
 
+covid_data = {
+    CASES_STATS: [],
+    SAFETY_MEASURES: []
+}
 
-covid_data = {}
 
-
-def read_files(covid_analyzer_file_path: str) -> None:
-    """read the files in the given path to covid dictionary
+def run_tasks(covid_data, command_line_arguments: object):
+    """Run the specific or all the tasks related to covid_data analysys
+       depending upon the attibutes values of the provided command 
+       line argument object
 
     Args:
-        covid_analyzer_file_path (str): path wehre files exist
+        command_line_arguments (object): contains the command line values 
+        provided by the user as attributes
     """
     
-    covid_data[CASES_STATS] = []
-    covid_data[SAFETY_MEASURES] = []
-    with open(f'{covid_analyzer_file_path}/covid_cases_stats.csv') as csv_file:
-        covid_cases_stats = csv.reader(csv_file, delimiter=',')
-        covid_data[CASES_STATS] = [
-            covid_data_per_country for covid_data_per_country in covid_cases_stats
-            ]
-        covid_data[CASES_STATS] = covid_data[CASES_STATS][1:len(covid_data[CASES_STATS]) - 8]
-        
-    with open(f'{covid_analyzer_file_path}/covid_safety_measures.csv') as csv_file:
-        covid_safety_measures = csv.reader(csv_file, delimiter=',')
-        covid_data[SAFETY_MEASURES] = [
-            covid_data_per_country for covid_data_per_country in covid_safety_measures
-            ]
-        covid_data[SAFETY_MEASURES] = covid_data[SAFETY_MEASURES][1:]
+    if (country:=command_line_arguments.recovered_ratio) is not None:
+        utils.get_ratio_of_recovered_patients(covid_data, country)
+    if (safety_measure:=command_line_arguments.safety_measure) is not None:
+        utils.get_average_death_rate(covid_data, safety_measure)
+    if command_line_arguments.most_efficient_safetey_measures:
+        most_efficient_safety_measures =  utils.get_most_efficient_safety_measures(covid_data)
+        for safety_measures_with_efficieny in most_efficient_safety_measures:
+            print(f'{safety_measures_with_efficieny[SAFETY_MEASURE]}: {safety_measures_with_efficieny[EFFICIENCY]}')
+    if command_line_arguments.graphical_display_of_efficient_safety_measures:
+        utils.graphical_display_of_efficient_safety_measures(covid_data)
 
 
 def main():
     command_line_arguments = parse_arguments()
-    read_files(command_line_arguments.covid_files_path)
-    perform_tasks.run_tasks(covid_data, command_line_arguments)
+    read_files(covid_data, command_line_arguments.covid_files_path)
+    run_tasks(covid_data, command_line_arguments)
         
 if __name__ == "__main__":      
     main()

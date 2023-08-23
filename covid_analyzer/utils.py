@@ -6,7 +6,7 @@ from constants import (
     )
 
 
-def get_ratio_of_recovered_patients(covid_data, country: str): 
+def get_ratio_of_recovered_patients(covid_data, country: str) -> None: 
     """Return the ratio of recovered patients of a country
 
     Args:
@@ -15,21 +15,22 @@ def get_ratio_of_recovered_patients(covid_data, country: str):
     Returns:
         int: 0 if the country's name or data do not exist, otherwise returns the ratio
     """
-    COUNTRY_NAME_IDX_IN_COVID_STATS = 0
+    
     for covid_cases_details_per_country in covid_data[CASES_STATS]:
         if covid_cases_details_per_country[COUNTRY_NAME_IDX_IN_COVID_STATS] == country:
             try:
                 recovered_ratio = round(
                     int(covid_cases_details_per_country[TOTAL_RECOVERED_PATIENTS])
                     / int(covid_cases_details_per_country[TOTAL_PATIENTS]), 2
-                    )
+                )
                 print(f'Recovered/total ratio: {recovered_ratio}')
+                return None
             except ValueError:
-                return "Country data not available" 
+                 print("Country data not available")
     else:
-        return "Country data not available" 
-    
+        print("Country data not available")
 
+    
 def get_countries_following_the_safety_measure(covid_data, safety_measure: str) -> list:
     """Returns the list of countries that follows given safety measure
 
@@ -42,11 +43,13 @@ def get_countries_following_the_safety_measure(covid_data, safety_measure: str) 
     
     country_following_the_safety_measures = []
     for covid_safety_measures_details_per_country in covid_data[SAFETY_MEASURES]:
-        if covid_safety_measures_details_per_country[IMPLEMENTED_SAFETY_MEASURES] == safety_measure and \
-            (country:=covid_safety_measures_details_per_country[COUNTRY_NAME_IDX_IN_COVID_SAFETY_MEASURES]) not in country_following_the_safety_measures:
-                country_following_the_safety_measures.append(country)
+        if all([
+        covid_safety_measures_details_per_country[IMPLEMENTED_SAFETY_MEASURES] == safety_measure,
+        (
+            country:=covid_safety_measures_details_per_country[COUNTRY_NAME_IDX_IN_COVID_SAFETY_MEASURES]) not in country_following_the_safety_measures]
+        ):
+            country_following_the_safety_measures.append(country)
     return country_following_the_safety_measures
-
 
 
 def get_average_death_rate(covid_data, safety_measure: str) -> tuple:
@@ -67,8 +70,9 @@ def get_average_death_rate(covid_data, safety_measure: str) -> tuple:
     total_deaths_in_country_following_the_measures = 0
     total_deaths_around_the_globe = 0
     for covid_cases_details_per_country in covid_data[CASES_STATS]:
-        if covid_cases_details_per_country[COUNTRY_NAME_IDX_IN_COVID_STATS] in countries_following_the_safety_measure:
-            if (deaths:=covid_cases_details_per_country[TOTAL_DEATHS]) != EMPTY_STRING:
+        if all([covid_cases_details_per_country[COUNTRY_NAME_IDX_IN_COVID_STATS] in countries_following_the_safety_measure,
+                (deaths:=covid_cases_details_per_country[TOTAL_DEATHS]) != EMPTY_STRING]
+            ):
                 total_deaths_in_country_following_the_measures += int(deaths)
                 
         if (deaths:=covid_cases_details_per_country[TOTAL_DEATHS]) != EMPTY_STRING:
@@ -96,16 +100,18 @@ def get_efficiency(covid_data, countries_follwoing_the_safety_measures: list) ->
     total_cases_of_all_countries = 0
     for covid_stats_detail_per_country in covid_data[CASES_STATS]:
         country_name = covid_stats_detail_per_country[COUNTRY_NAME_IDX_IN_COVID_STATS]
-        if (country_name != EMPTY_STRING) and (country_name in countries_follwoing_the_safety_measures):
+        if all([
+                (country_name != EMPTY_STRING),
+                (country_name in countries_follwoing_the_safety_measures)
+            ]):
             if all([
                 covid_stats_detail_per_country[TOTAL_CASES] != EMPTY_STRING,
                 covid_stats_detail_per_country[TOTAL_RECOVERED_PATIENTS] != EMPTY_STRING,
                 covid_stats_detail_per_country[TOTAL_RECOVERED_PATIENTS] != ZERO
-            ]):
+                ]):
                 total_cases_of_all_countries += int(covid_stats_detail_per_country[TOTAL_CASES])
                 total_recovered_cases_of_all_countries += int(covid_stats_detail_per_country[TOTAL_RECOVERED_PATIENTS])
-
-                
+                         
     if total_cases_of_all_countries == ZERO:
         return ZERO
     
@@ -123,7 +129,7 @@ def get_most_efficient_safety_measures(covid_data) -> list:
             set([
             safety_measure_details[IMPLEMENTED_SAFETY_MEASURES] for safety_measure_details in covid_data[SAFETY_MEASURES]
             ])
-            )
+    )
     for safety_measure in unique_safety_measures:
         countries_following_the_safety_measure = get_countries_following_the_safety_measure(covid_data, safety_measure)
         efficiency_for_specific_measure = get_efficiency(covid_data, countries_following_the_safety_measure)
@@ -139,10 +145,10 @@ def graphical_display_of_efficient_safety_measures(covid_data) -> None:
     most_efficient_safety_measures = get_most_efficient_safety_measures(covid_data)
     safety_measures = [
         efficient_safety_measure[SAFETY_MEASURE] for efficient_safety_measure in most_efficient_safety_measures
-        ]
+    ]
     efficiencies = [
         efficient_safety_measure[EFFICIENCY] for efficient_safety_measure in most_efficient_safety_measures
-        ]
+    ]
     plt.figure('Top 5 Safety measures with Efficiencies', figsize=(10, 6))
     plt.xlabel("Efficiency Vaue")
     plt.ylabel('Safety Measure')

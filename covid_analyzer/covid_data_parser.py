@@ -1,5 +1,8 @@
 import argparse
-from constants import RECOVERED_RATIO, SAFETY_MEASURE_ARG, MOST_EFFICIENT_SAFETY_MEASURES, GRAPHICAL_DISPLAY
+import csv 
+from constants import RECOVERED_RATIO, SAFETY_MEASURE_ARG, MOST_EFFICIENT_SAFETY_MEASURES, GRAPHICAL_DISPLAY, COVID_FILES_PATH, CASES_STATS, SAFETY_MEASURES
+
+
 def parse_arguments() -> object:
     """Parse the command line arguments into object
 
@@ -9,7 +12,7 @@ def parse_arguments() -> object:
     
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "covid_files_path", help="data_dir"
+        COVID_FILES_PATH, help="data_dir"
         )
     parser.add_argument(
         RECOVERED_RATIO, '--recovered_ratio', help="To find the recovered ratio of country"
@@ -27,3 +30,28 @@ def parse_arguments() -> object:
         )
     args = parser.parse_args()    
     return args
+
+
+
+
+def read_files(covid_data: dict, covid_analyzer_file_path: str) -> None:
+    """read the files in the given path to covid dictionary
+
+    Args:
+        covid_data (dict): a dictionay where data needs to be stroed
+        covid_analyzer_file_path (str): path wehre files exist
+    """
+    
+    with open(f'{covid_analyzer_file_path}/covid_cases_stats.csv') as csv_file:
+        covid_cases_stats = csv.reader(csv_file, delimiter=',')
+        covid_data[CASES_STATS] = [
+            covid_data_per_country for covid_data_per_country in covid_cases_stats
+            ]
+        covid_data[CASES_STATS] = covid_data[CASES_STATS][1:len(covid_data[CASES_STATS]) - 8]
+        
+    with open(f'{covid_analyzer_file_path}/covid_safety_measures.csv') as csv_file:
+        covid_safety_measures = csv.reader(csv_file, delimiter=',')
+        covid_data[SAFETY_MEASURES] = [
+            covid_data_per_country for covid_data_per_country in covid_safety_measures
+            ]
+        covid_data[SAFETY_MEASURES] = covid_data[SAFETY_MEASURES][1:]
