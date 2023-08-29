@@ -13,7 +13,8 @@ def get_ratio_of_recovered_patients(covid_data, country: str) -> None:
         country (str): country name (case sensitive)
  
     Returns:
-        int: 0 if the country's name or data do not exist, otherwise returns the ratio
+        : prints Country data not available if the country's name or data do not exist,
+           otherwise returns the ratio
     """
     
     for covid_cases_details_per_country in covid_data[CASES_STATS]:
@@ -24,7 +25,7 @@ def get_ratio_of_recovered_patients(covid_data, country: str) -> None:
                     / int(covid_cases_details_per_country[TOTAL_PATIENTS]), 2
                 )
                 print(f'Recovered/total ratio: {recovered_ratio}')
-                return None
+                return
             except ValueError:
                  print("Country data not available")
     else:
@@ -41,15 +42,12 @@ def get_countries_following_the_safety_measure(covid_data, safety_measure: str) 
         list: countries list 
     """
     
-    country_following_the_safety_measures = []
-    for covid_safety_measures_details_per_country in covid_data[SAFETY_MEASURES]:
-        if all([
-        covid_safety_measures_details_per_country[IMPLEMENTED_SAFETY_MEASURES] == safety_measure,
-        (
-            country:=covid_safety_measures_details_per_country[COUNTRY_NAME_IDX_IN_COVID_SAFETY_MEASURES]) not in country_following_the_safety_measures]
-        ):
-            country_following_the_safety_measures.append(country)
-    return country_following_the_safety_measures
+    country_following_the_safety_measures = [
+        covid_safety_measures_details_per_country[COUNTRY_NAME_IDX_IN_COVID_SAFETY_MEASURES]
+        for covid_safety_measures_details_per_country in covid_data[SAFETY_MEASURES]
+        if covid_safety_measures_details_per_country[IMPLEMENTED_SAFETY_MEASURES] == safety_measure
+    ]
+    return set(country_following_the_safety_measures)
 
 
 def get_average_death_rate(covid_data, safety_measure: str) -> tuple:
@@ -101,16 +99,14 @@ def get_efficiency(covid_data, countries_follwoing_the_safety_measures: list) ->
     for covid_stats_detail_per_country in covid_data[CASES_STATS]:
         country_name = covid_stats_detail_per_country[COUNTRY_NAME_IDX_IN_COVID_STATS]
         if all([
-                (country_name != EMPTY_STRING),
-                (country_name in countries_follwoing_the_safety_measures)
-            ]):
-            if all([
-                covid_stats_detail_per_country[TOTAL_CASES] != EMPTY_STRING,
-                covid_stats_detail_per_country[TOTAL_RECOVERED_PATIENTS] != EMPTY_STRING,
-                covid_stats_detail_per_country[TOTAL_RECOVERED_PATIENTS] != ZERO
-                ]):
-                total_cases_of_all_countries += int(covid_stats_detail_per_country[TOTAL_CASES])
-                total_recovered_cases_of_all_countries += int(covid_stats_detail_per_country[TOTAL_RECOVERED_PATIENTS])
+            (country_name != EMPTY_STRING),
+            (country_name in countries_follwoing_the_safety_measures),
+            covid_stats_detail_per_country[TOTAL_CASES] != EMPTY_STRING,
+            covid_stats_detail_per_country[TOTAL_RECOVERED_PATIENTS] != EMPTY_STRING,
+            covid_stats_detail_per_country[TOTAL_RECOVERED_PATIENTS] != ZERO
+        ]):
+            total_cases_of_all_countries += int(covid_stats_detail_per_country[TOTAL_CASES])
+            total_recovered_cases_of_all_countries += int(covid_stats_detail_per_country[TOTAL_RECOVERED_PATIENTS])
                          
     if total_cases_of_all_countries == ZERO:
         return ZERO
@@ -134,9 +130,7 @@ def get_most_efficient_safety_measures(covid_data) -> list:
         countries_following_the_safety_measure = get_countries_following_the_safety_measure(covid_data, safety_measure)
         efficiency_for_specific_measure = get_efficiency(covid_data, countries_following_the_safety_measure)
         efficiencies_against_safety_measure.append((safety_measure, efficiency_for_specific_measure))
-    efficiencies_against_safety_measure = sorted(efficiencies_against_safety_measure, key=lambda x: x[EFFICIENCY], reverse=True)
-    
-    return efficiencies_against_safety_measure[:5]
+    return sorted(efficiencies_against_safety_measure, key=lambda x: x[EFFICIENCY], reverse=True)[:5]
 
 
 def graphical_display_of_efficient_safety_measures(covid_data) -> None:
