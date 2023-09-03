@@ -3,30 +3,29 @@ from scrapy.selector import Selector
 from scrapy.loader import ItemLoader
 from playwright._impl._api_types import TimeoutError
 from .constants import (
-    URL, TOTAL_PAGES, BLOG_ID, SCROLL_HEIGHT, BLOGS_CLASS
-    )
+    AUTHOR_NAME, AUTHOR_NAME_CSS, BLOG_ID, BLOG_IMAGE_LINK, BLOG_LINK, BLOG_PUBLISH_DATE,
+    BLOG_SUMMARY, BLOG_TITLE, BLOGS_CLASS, BLOGS_PER_PAGE, IMAGE_LINK_CSS, LINK_CSS,
+    PLAYWRIGHT, PLAYWRIGHT_PAGE, PUBLISH_DATE_CSS, SCROLL_HEIGHT, SUMMARY_CSS,
+    TITLE_CSS, TOTAL_PAGES, URL
+)
 from ..items import EducativeItem
 
 
 class EducativeBlogScraper(scrapy.Spider):
-    name = 'educative_blog_scraper'
+    name = 'educative'
     
     def start_requests(self):
         yield scrapy.Request(
             URL,
-            meta={
-                'playwright': True,
-                'playwright_include_page': True,
-                'proxy': '116.58.62.58'
-            },
+            meta=PLAYWRIGHT,
             errback=self.close_page
         )
 
     async def parse(self, response):
-        page = response.meta['playwright_page']
+        page = response.meta[PLAYWRIGHT_PAGE]
         for page_number in range(TOTAL_PAGES):
             try:
-                blog_number = page_number * 8
+                blog_number = page_number * BLOGS_PER_PAGE
                 await page.wait_for_selector(f'{BLOG_ID}{blog_number}')
                 await page.evaluate(SCROLL_HEIGHT)
             except TimeoutError:
@@ -40,15 +39,15 @@ class EducativeBlogScraper(scrapy.Spider):
         blogs = response.css(BLOGS_CLASS)
         for blog in blogs:
             loader = ItemLoader(item=EducativeItem())
-            loader.add_value('blog_title', blog.css("a div.h-64 div.mt-4 p.m-0::text").get())
-            loader.add_value('blog_link', blog.css("a::attr(href)").get())
-            loader.add_value('blog_summary', blog.css("div#reader-blog-summary::text").get())
-            loader.add_value('blog_image_link', blog.css('img::attr(src)').get())
-            loader.add_value('blog_publish_date', blog.css("div#read-blogInfo-publishDate"))
-            loader.add_value('author_name', blog.css("div.body-small::text").get())
+            loader.add_value(BLOG_TITLE, blog.css(TITLE_CSS).get())
+            loader.add_value(BLOG_LINK, blog.css(LINK_CSS).get())
+            loader.add_value(BLOG_SUMMARY, blog.css(SUMMARY_CSS).get())
+            loader.add_value(BLOG_IMAGE_LINK, blog.css(IMAGE_LINK_CSS).get())
+            loader.add_value(BLOG_PUBLISH_DATE, blog.css(PUBLISH_DATE_CSS))
+            loader.add_value(AUTHOR_NAME, blog.css(AUTHOR_NAME_CSS).get())
             yield loader.load_item()
                   
     async def close_page(self, error):
-        page = error.request.meta['playwright_page']
-        print("Following Error Occured ", error)
+        page = error.request.meta[PLAYWRIGHT_PAGE]
+        print("The reason page was closed is ", error)
         await page.close()

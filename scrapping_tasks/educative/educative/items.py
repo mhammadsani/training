@@ -1,25 +1,15 @@
 from scrapy import Item, Field
 from itemloaders.processors import MapCompose, TakeFirst
+from .spiders.constants import PUBLISH_DATE_ID
 
 
 def extract_publish_date(selector):
-    selector = selector.css('div#read-blogInfo-publishDate::text')
-    date_parts = [temp.get().strip() 
-                  for temp in selector 
-                  if not(any([temp.get().strip() == '', temp.get().strip()=='·']))] 
+    date_parts = [part.strip() 
+                  for part in selector.css(PUBLISH_DATE_ID).getall()
+                  if part.strip() not in ['', '·']]
     if len(date_parts) == 1:
-        date_parts = date_parts[0].split(" ")
-        date_parts = [temp for temp in date_parts if not(any([temp.strip() == '', temp.strip()=='·']))]
-    return '-'.join(pd for pd in date_parts)
-
-# def extract_publish_date(selector):
-#     date_parts = [
-#         temp.strip() for temp in selector.css('div#read-blogInfo-publishDate::text')
-#         if temp.strip() not in ['', '·']
-#     ]
-#     if len(date_parts) == 1:
-#         date_parts = [temp for temp in date_parts[0].split(" ") if temp.strip() != '']
-#     return '-'.join(date_parts)
+        date_parts = [part for part in date_parts[0].split() if part.strip() not in ['', '·']]
+    return '-'.join(date_parts)
 
 
 def complete_link(href):
