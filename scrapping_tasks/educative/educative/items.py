@@ -4,12 +4,15 @@ from .spiders.constants import PUBLISH_DATE_ID
 
 
 def extract_publish_date(selector):
-    date_parts = [part.strip() 
-                  for part in selector.css(PUBLISH_DATE_ID).getall()
-                  if part.strip() not in ['', '·']]
+    date_parts = [
+        part.strip() 
+        for part in selector.css(PUBLISH_DATE_ID).getall()
+        if part.strip() not in ['', '·']
+    ]
     if len(date_parts) == 1:
         date_parts = [part for part in date_parts[0].split() if part.strip() not in ['', '·']]
     return '-'.join(date_parts)
+
 
 
 def complete_link(href):

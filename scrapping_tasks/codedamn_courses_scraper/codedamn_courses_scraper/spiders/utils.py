@@ -11,20 +11,16 @@ from .constants import (
 from .credentials import USER, EMAIL, PASSWORD
 
 
-def wait(seconds):
-    time.sleep(seconds)
-
-
 def open_course(driver):
     driver.get(COURSE_LINK)
-    wait(2)
+    time.sleep(2)
    
     
 def open_chrome(url):
     driver = webdriver.Chrome()
     driver.set_window_size(WIDTH, HEIGHT)
     driver.get(url)
-    wait(2)
+    time.sleep(2)
     return driver
     
         
@@ -62,7 +58,7 @@ def download_video(driver, video_link):
         driver.get(video_link)
         driver.close()
         driver.switch_to.window(driver.window_handles[PREVIOUS_TAB])
-    except Exception as e:
+    except Exception:
         driver.close()
         driver.switch_to.window(driver.window_handles[PREVIOUS_TAB])
         
@@ -72,7 +68,7 @@ def process_pages(driver, pages_hrefs, response):
     for page_number in range(2):
         page_link = BASE_URL + pages_hrefs[page_number]
         driver.get(page_link)
-        wait(10)
+        time.sleep(10)
         initial_page_source = driver.page_source
         response = HtmlResponse(url=response.url, body=initial_page_source, encoding=UTF)
         video_link = response.css(VIDEO_SOURCE_SELECTOR).get()
