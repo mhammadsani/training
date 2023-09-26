@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}
+    <title> Profile </title>
+{% endblock title %}
+{% block content %}
+    <h3>Welcome {{ user }}</h3> 
+    {% if user.is_superuser %}
+        <a href="{% url "hostmanagement" %}">Admin Management</a> <br><br>
+    {% elif is_quiz_attempter %}
+        <a href="{% url "showquizzes" %}"> Show Quizzes </a> <br> <br>
+    {% else %}
+        <a href="{% url "quizmanagement" %}">Quiz Host Management</a> <br><br>
+    {% endif %}
+    {% comment %} <a href="{% url "quiz_attempter_homepage" %}">Quiz Attempter</a> {% endcomment %}
+    <a href="{% url "logout" %}">Logout</a> <br> 
+    <a href="{% url "changepassword" %}">Change Password</a> <br> 
+{% endblock content %}

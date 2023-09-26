@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}
+    <title>Full Discussion</title>
+    <head>
+        <style>
+            span{
+                color:red;
+            }
+            .discussion, .comment{
+                border: 2px solid black;
+                padding: 5px;
+                border-top: 2px;
+            }
+            
+        </style>
+    </head>
+{% endblock title %}
+
+{% block content %}
+    <div class="discussion">
+        {{ discussion.subject }}
+        <hr>
+        {{ discussion.details }}
+        <span>{{author}}</span>
+    </div>
+
+    {% for comment in  comments%}
+        <div class="comment">
+            {{ comment.comment }}
+            <span>{{ comment.commenter.username }}</span>
+        </div>
+    {% endfor %}
+    <br>
+    <form action="" method="POST">
+        {% csrf_token %}
+        {{ comment_form.label_tag }} {{ comment_form }} {{ comment_form.errors }}
+        <input type="submit" value="comment">
+    </form>
+    <br>
+    {% if is_quiz_attempter %}
+        <a href="{% url "discussion" quiz_id%}">Discussions</a>
+    {% else %}
+    <a href="{% url "draftquizzes" %}">Draft Quizzes</a>
+    <a href="{% url "viewdiscussions" quiz_id%}">View Discussion</a>
+    {% endif %}
+{% endblock content %}
